@@ -1,0 +1,75 @@
+## Build results
+bin/
+obj/
+Debug/
+Release/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/.*                # <-- ignore Visual Studio cache folder
+
+## Visual Studio Code
+.vscode/
+
+## Rider
+.idea/
+
+## Logs
+*.log
+
+## NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+## Azure
+*.azurepubxml
+*.pubxml
+*.publishproj
+
+## Entity Framework
+Migrations/
+
+## Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+## DotCover
+*.dotCover
+
+## Tye
+.tye/
+
+## Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Others
+*.dbmdl
+*.bak
+*.mdf
+*.ldf
+*.sqlite
+*.sqlite3
+
+## Runtime files
+*.runtimeconfig.json
+*.deps.json
+*.dll
+*.exe
+
+## Generated files
+Generated_Code/
+
+## Temporary files
+*.tmp
+*.temp
