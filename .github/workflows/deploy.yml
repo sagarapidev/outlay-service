@@ -67,7 +67,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'outlay-service'
-          slot-name: 'dev'
           package: ./publish
 
       - name: Set Azure App Settings
@@ -75,5 +74,4 @@ jobs:
           az webapp config appsettings set \
             --name outlay-service \
             --resource-group sgr-e2e-reg \
-            --slot dev \
             --settings OLSConfig='${{ secrets.OUTLAYS_CONFIG }}'
