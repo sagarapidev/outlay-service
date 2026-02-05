@@ -3,7 +3,7 @@ name: Build and Deploy .NET 9 App to Azure Web App - outlay-service
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 jobs:
