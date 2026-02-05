@@ -68,3 +68,10 @@ jobs:
           app-name: 'outlay-service'
           slot-name: 'Production'
           package: ./publish
+
+      - name: Set Azure App Settings
+        run: |
+          az webapp config appsettings set \
+            --name outlay-service \
+            --resource-group sgr-e2e-reg \
+            --settings OLSConfig=${{ vars.OLSConfig }} 
