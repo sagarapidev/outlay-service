@@ -73,3 +73,5 @@ Generated_Code/
 ## Temporary files
 *.tmp
 *.temp
+*.vsidx
+*.json
