@@ -11,7 +11,7 @@ Release/
 *.sln.docstates
 
 ## Visual Studio
-.vs/.*                # <-- ignore Visual Studio cache folder
+.vs/                # <-- ignore Visual Studio cache folder
 
 ## Visual Studio Code
 .vscode/
