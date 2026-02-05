@@ -75,4 +75,5 @@ jobs:
           az webapp config appsettings set \
             --name outlay-service \
             --resource-group sgr-e2e-reg \
+            --slot dev \
             --settings OLSConfig='${{ vars.OUTLAYS_CONFIG }}
