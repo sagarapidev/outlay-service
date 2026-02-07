@@ -75,3 +75,7 @@ Generated_Code/
 *.temp
 *.vsidx
 *.json
+*.db
+*.db-shm
+*.db-wal
+*.slnx
