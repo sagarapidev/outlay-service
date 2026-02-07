@@ -7,10 +7,9 @@ using OutlayService.Events.Services.Interface;
 using OutlayService.Events.Services.Impl;
 using Scalar.AspNetCore;
 using OutlayService.Constants;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Kestrel configuration will be read from appsettings.json
 
 // Add EF Core DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -19,32 +18,40 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register application services
 builder.Services.AddScoped<IUserService, UserService>();
 
-// Bind EventHubConfig section to EventHubRouteOptions
-var eventHubOptions = new EventHubRouteOptions();
-builder.Configuration.GetSection(AppConstant.EVENTHUB_CONFIG).Bind(eventHubOptions);
+// Read EVENTHUB_CONFIG as raw JSON string
+var eventHubConfigJson = builder.Configuration[AppConstant.EVENTHUB_CONFIG];
+EventHubRouteOptions? eventHubOptions = null;
 
-// Validate configuration to avoid null reference warnings
-if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
+if (!string.IsNullOrEmpty(eventHubConfigJson))
 {
-    throw new InvalidOperationException("EventHubConfig.Routes is missing or empty in configuration.");
+    try
+    {
+        eventHubOptions = JsonSerializer.Deserialize<EventHubRouteOptions>(eventHubConfigJson);
+        if (eventHubOptions?.Routes != null && eventHubOptions.Routes.Count > 0)
+        {
+            // Register Event Hub producer service with logger injection
+            builder.Services.AddSingleton<IEventProducerRouteService>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<EventProducerRouteService>>();
+                return new EventProducerRouteService(eventHubOptions, logger);
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log parse error later after app is built
+        builder.Services.AddSingleton(sp =>
+        {
+            var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+            logger.LogError(ex, "Failed to parse EVENTHUB_CONFIG JSON. EventHub integration disabled.");
+            return new object(); // dummy registration to satisfy DI
+        });
+    }
 }
 
-// Register Event Hub producer service with logger injection
-builder.Services.AddSingleton<IEventProducerRouteService>(sp =>
-{
-    var logger = sp.GetRequiredService<ILogger<EventProducerRouteService>>();
-    return new EventProducerRouteService(eventHubOptions, logger);
-});
-
 builder.Services.AddControllers();
-
-// Swagger/OpenAPI
 builder.Services.AddOpenApi();
-
-// Logging
 builder.Services.AddLogging();
-
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -57,7 +64,22 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Startup logging
+var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+
+if (string.IsNullOrEmpty(eventHubConfigJson))
+{
+    startupLogger.LogWarning("EVENTHUB_CONFIG is missing or empty. EventHub integration disabled.");
+}
+else if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
+{
+    startupLogger.LogWarning("EVENTHUB_CONFIG.Routes is missing or empty. EventHub integration disabled.");
+}
+else
+{
+    startupLogger.LogInformation("EVENTHUB_CONFIG successfully loaded with {Count} routes.", eventHubOptions.Routes.Count);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -67,18 +89,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
-
-try
-{
-    app.MapControllers();
-}
-catch (System.Reflection.ReflectionTypeLoadException ex)
-{
-    foreach (var typeLoadException in ex.LoaderExceptions)
-    {
-        Console.WriteLine($"Type loading failed: {typeLoadException.Message}");
-    }
-    throw;
-}
+app.MapControllers();
 
 app.Run();
