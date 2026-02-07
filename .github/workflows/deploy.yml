@@ -74,4 +74,4 @@ jobs:
           az webapp config appsettings set \
             --name outlay-service \
             --resource-group sgr-e2e-reg \
-            --settings AppealsConfig='${{ vars.APPEALSCONFIG }}'
+            --settings EVENTHUB_CONFIG='${{ vars.EVENTHUB_CONFIG }}'
