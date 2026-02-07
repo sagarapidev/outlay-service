@@ -23,10 +23,18 @@ builder.Services.AddScoped<IUserService, UserService>();
 var eventHubOptions = new EventHubRouteOptions();
 builder.Configuration.GetSection(AppConstant.EVENTHUB_CONFIG).Bind(eventHubOptions);
 
-// Register Event Hub producer service
-builder.Services.AddSingleton<IEventProducerRouteService>(
-    new EventProducerRouteService(eventHubOptions)
-);
+// Validate configuration to avoid null reference warnings
+if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
+{
+    throw new InvalidOperationException("EventHubConfig.Routes is missing or empty in configuration.");
+}
+
+// Register Event Hub producer service with logger injection
+builder.Services.AddSingleton<IEventProducerRouteService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<EventProducerRouteService>>();
+    return new EventProducerRouteService(eventHubOptions, logger);
+});
 
 builder.Services.AddControllers();
 
@@ -57,9 +65,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 
 try
