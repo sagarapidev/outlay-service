@@ -34,15 +34,22 @@ if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
         }
         catch (Exception ex)
         {
-            // Log parse error later after app is built
-            builder.Services.AddSingleton(sp =>
-            {
-                var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
-                logger.LogError(ex, "Failed to parse EVENTHUB_CONFIG JSON string. EventHub integration disabled.");
-                return new object(); // dummy registration
-            });
+            builder.Services.AddSingleton<IEventProducerRouteService, NoOpEventProducerRouteService>();
+            builder.Logging.AddConsole();
+            var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
+            var logger = loggerFactory.CreateLogger("Startup");
+            logger.LogError(ex, "Failed to parse EVENTHUB_CONFIG JSON string. EventHub integration disabled.");
         }
     }
+}
+
+// Validate routes: remove any with missing values
+if (eventHubOptions?.Routes != null)
+{
+    eventHubOptions.Routes = eventHubOptions.Routes
+        .Where(r => !string.IsNullOrWhiteSpace(r.ConnectionString) &&
+                    !string.IsNullOrWhiteSpace(r.EventHubName))
+        .ToList();
 }
 
 // Register Event Hub producer service if config is valid, else fallback no-op
@@ -83,7 +90,7 @@ if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
 }
 else
 {
-    startupLogger.LogInformation("EVENTHUB_CONFIG successfully loaded with {Count} routes.", eventHubOptions.Routes.Count);
+    startupLogger.LogInformation("EVENTHUB_CONFIG successfully loaded with {Count} valid routes.", eventHubOptions.Routes.Count);
 }
 
 if (app.Environment.IsDevelopment())
