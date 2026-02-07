@@ -6,7 +6,7 @@ using OutlayService.Events.DTOs;
 using OutlayService.Events.Services.Interface;
 using OutlayService.Events.Services.Impl;
 using Scalar.AspNetCore;
-using OutlayService.Constants.AppConstant;
+using OutlayService.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +21,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // Bind EventHubConfig section to EventHubRouteOptions
 var eventHubOptions = new EventHubRouteOptions();
-builder.Configuration.GetSection(EVENTHUB_CONFIG).Bind(eventHubOptions);
+builder.Configuration.GetSection(AppConstant.EVENTHUB_CONFIG).Bind(eventHubOptions);
 
 // Register Event Hub producer service
 builder.Services.AddSingleton<IEventProducerRouteService>(
