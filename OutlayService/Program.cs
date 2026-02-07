@@ -2,25 +2,40 @@ using Microsoft.EntityFrameworkCore;
 using OutlayService.Data;
 using OutlayService.Services.Impl;
 using OutlayService.Services.Interfaces;
+using OutlayService.Events.DTOs;
+using OutlayService.Events.Services.Interface;
+using OutlayService.Events.Services.Impl;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Kestrel configuration will be read from appsettings.json
 
-// Add services to the container
+// Add EF Core DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register application services
 builder.Services.AddScoped<IUserService, UserService>();
+
+// Bind EventHubConfig section to EventHubRouteOptions
+var eventHubOptions = new EventHubRouteOptions();
+builder.Configuration.GetSection("EventHubConfig").Bind(eventHubOptions);
+
+// Register Event Hub producer service
+builder.Services.AddSingleton<IEventProducerRouteService>(
+    new EventProducerRouteService(eventHubOptions)
+);
 
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger at https://aka.ms/aspnet/openapi
+// Swagger/OpenAPI
 builder.Services.AddOpenApi();
 
+// Logging
 builder.Services.AddLogging();
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
