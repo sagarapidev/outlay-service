@@ -1,10 +1,8 @@
-﻿using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Azure.Messaging.EventHubs;
+﻿using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
 using OutlayService.Events.DTOs;
 using OutlayService.Events.Services.Interface;
+using System.Text;
 
 namespace OutlayService.Events.Services.Impl
 {
@@ -30,7 +28,7 @@ namespace OutlayService.Events.Services.Impl
                 );
             }
 
-           
+
         }
 
         public async Task SendMessageAsync(string eventName, string message)

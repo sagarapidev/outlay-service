@@ -1,15 +1,18 @@
 using Microsoft.EntityFrameworkCore;
+using OutlayService.Constants;
 using OutlayService.Data;
+using OutlayService.Events.DTOs;
+using OutlayService.Events.Services.Impl;
+using OutlayService.Events.Services.Interface;
 using OutlayService.Services.Impl;
 using OutlayService.Services.Interfaces;
-using OutlayService.Events.DTOs;
-using OutlayService.Events.Services.Interface;
-using OutlayService.Events.Services.Impl;
 using Scalar.AspNetCore;
-using OutlayService.Constants;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load .env for local dev
+EnvConfig.Load(builder.Configuration);
 
 // Add EF Core DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -18,11 +21,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register application services
 builder.Services.AddScoped<IUserService, UserService>();
 
-// Try binding EVENTHUB_CONFIG as a section (works with appsettings.json locally)
+// Bind EVENTHUB_CONFIG (works with appsettings.json or env vars)
 var eventHubOptions = new EventHubRouteOptions();
 builder.Configuration.GetSection(AppConstant.EVENTHUB_CONFIG).Bind(eventHubOptions);
 
-// If binding failed (Routes empty), fallback to raw JSON string (works in Azure env vars)
+// Fallback: if Azure injects EVENTHUB_CONFIG as raw JSON string
 if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
 {
     var eventHubConfigJson = builder.Configuration[AppConstant.EVENTHUB_CONFIG];
@@ -35,7 +38,6 @@ if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
         catch (Exception ex)
         {
             builder.Services.AddSingleton<IEventProducerRouteService, NoOpEventProducerRouteService>();
-            builder.Logging.AddConsole();
             var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
             var logger = loggerFactory.CreateLogger("Startup");
             logger.LogError(ex, "Failed to parse EVENTHUB_CONFIG JSON string. EventHub integration disabled.");
@@ -43,7 +45,7 @@ if (eventHubOptions?.Routes == null || eventHubOptions.Routes.Count == 0)
     }
 }
 
-// Validate routes: remove any with missing values
+// Validate routes
 if (eventHubOptions?.Routes != null)
 {
     eventHubOptions.Routes = eventHubOptions.Routes
@@ -52,7 +54,7 @@ if (eventHubOptions?.Routes != null)
         .ToList();
 }
 
-// Register Event Hub producer service if config is valid, else fallback no-op
+// Register Event Hub producer service
 if (eventHubOptions?.Routes != null && eventHubOptions.Routes.Count > 0)
 {
     builder.Services.AddSingleton<IEventProducerRouteService>(sp =>

@@ -1,32 +1,34 @@
-namespace OutlayService.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
-/// <summary>
-/// Represents a User entity in the system
-/// </summary>
-public class User
+namespace OutlayService.Models
 {
-    /// <summary>
-    /// Unique identifier for the user
-    /// </summary>
-    public int Id { get; set; }
+    public class User
+    {
+        [Key]
+        [Column("id")]
+        [JsonPropertyName("id")]
+        public long Id { get; set; }   // <-- changed to long
 
-    /// <summary>
-    /// User name
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(100)]
+        [Column("name")]
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
 
-    /// <summary>
-    /// User email address
-    /// </summary>
-    public string Email { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(150)]
+        [Column("email")]
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Date and time when the user record was created
-    /// </summary>
-    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        [Column("created_on")]
+        [JsonPropertyName("created_on")]
+        public DateTime? CreatedOn { get; set; } = DateTime.UtcNow;
 
-    /// <summary>
-    /// Date and time when the user record was last updated
-    /// </summary>
-    public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
+        [Column("updated_on")]
+        [JsonPropertyName("updated_on")]
+        public DateTime? UpdatedOn { get; set; } = DateTime.UtcNow;
+    }
 }

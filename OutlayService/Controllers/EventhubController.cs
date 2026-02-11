@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OutlayService.Events.Services.Interface;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace OutlayService.Controllers
 {

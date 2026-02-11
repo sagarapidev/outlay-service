@@ -1,6 +1,4 @@
-﻿using OutlayService.Events.DTOs;
-
-namespace OutlayService.Events.Services.Interface
+﻿namespace OutlayService.Events.Services.Interface
 {
     public interface IEventProducerRouteService
     {

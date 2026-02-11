@@ -1,32 +1,22 @@
-namespace OutlayService.DTOs;
+using System.Text.Json.Serialization;
 
-/// <summary>
-/// Data Transfer Object for returning user information
-/// </summary>
-public class UserDto
+namespace OutlayService.DTOs
 {
-    /// <summary>
-    /// Unique identifier for the user
-    /// </summary>
-    public int Id { get; set; }
+    public class UserDto
+    {
+        [JsonPropertyName("id")]
+        public long Id { get; set; }   // <-- changed to long
 
-    /// <summary>
-    /// User name
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
 
-    /// <summary>
-    /// User email address
-    /// </summary>
-    public string Email { get; set; } = string.Empty;
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Date and time when the user record was created
-    /// </summary>
-    public DateTime CreatedOn { get; set; }
+        [JsonPropertyName("created_on")]
+        public DateTime? CreatedOn { get; set; }
 
-    /// <summary>
-    /// Date and time when the user record was last updated
-    /// </summary>
-    public DateTime UpdatedOn { get; set; }
+        [JsonPropertyName("updated_on")]
+        public DateTime? UpdatedOn { get; set; }
+    }
 }
