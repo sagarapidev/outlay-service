@@ -95,7 +95,11 @@ else
     startupLogger.LogInformation("EVENTHUB_CONFIG successfully loaded with {Count} valid routes.", eventHubOptions.Routes.Count);
 }
 
-if (app.Environment.IsDevelopment())
+// ✅ New Env check from appsettings.json
+var envSetting = app.Configuration["Env"] ?? "prod";
+startupLogger.LogInformation("Custom Env setting: {Env}", envSetting);
+
+if (envSetting.Equals("dev", StringComparison.OrdinalIgnoreCase))
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
