@@ -22,16 +22,16 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore OutlayService/OutlayService.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build OutlayService/OutlayService.csproj --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test tests/OutlayService.Tests/OutlayService.Tests.csproj --no-build --verbosity normal
 
       - name: Publish
-        run: dotnet publish -c Release -o ./publish
+        run: dotnet publish OutlayService/OutlayService.csproj -c Release -o ./publish
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
