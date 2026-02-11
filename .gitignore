@@ -79,3 +79,4 @@ Generated_Code/
 *.db-shm
 *.db-wal
 *.slnx
+.env
