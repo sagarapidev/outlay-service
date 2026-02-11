@@ -42,7 +42,15 @@ public class UserService : IUserService
                     CreatedOn = u.CreatedOn,
                     UpdatedOn = u.UpdatedOn
                 })
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false); // avoids deadlocks in sync contexts
+
+            // Always return a valid response object
+            if (users.Count == 0)
+            {
+                return OutlayServiceResponse<IEnumerable<UserDto>>
+                    .SuccessResponse(Enumerable.Empty<UserDto>(), "No users found");
+            }
 
             return OutlayServiceResponse<IEnumerable<UserDto>>
                 .SuccessResponse(users, $"Retrieved {users.Count} users successfully");
@@ -50,14 +58,14 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all users");
-            return OutlayServiceResponse<IEnumerable<UserDto>>
-                .FailureResponse("An error occurred while retrieving users");
-        }
-    }
 
-    /// <summary>
-    /// Gets a user by ID
-    /// </summary>
+            // Always return a consistent failure response
+            return OutlayServiceResponse<IEnumerable<UserDto>>
+                .FailureResponse("An unexpected error occurred while retrieving users.");
+        }
+    }    /// <summary>
+         /// Gets a user by ID
+         /// </summary>
     public async Task<OutlayServiceResponse<UserDto>> GetUserByIdAsync(int id)
     {
         try
